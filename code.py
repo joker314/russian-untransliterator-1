@@ -1,12 +1,69 @@
-# Ask user for string to be transliterated to Cyrillic, including soft and hard signs.
+# Code that transliterates Latin to Cyrillic based on context, etc.
 
-latin_string = raw_input("Ask user for something.")
-cyrillic_string = raw_input
+# Program asks for input text in transliterated Russian, including soft and hard signs, if present.
 
-# Mechanism to search the string and replace letters with Cyrillic equivalents, e.g. d to д. For unclear situations (e.g. deciding between и and й), it will either make an educated guess based on the context or ask the user what Cyrillic letter was actually meant.
+# The program goes through the text replacing each letter with its correct Cyrillic equivalent. In ambiguous cases, the program makes educated guesses based on context, and sometimes asks the user what Cyrillic letter was meant.
 
-str.replace(d, д)
+# The program then goes through to correct errors in the transliterated Cyrillic that do not correspond to correct Russian orthography, e.g. йа ---> я, цх ---> ч etc. Sometimes it may ask the user for clarification as of to the Cyrillic letter that was meant.
 
-# Check the Cyrillic transliteration for errors that break Russian orthography rules and fix them, e.g. цх ---> ч or йу ---> ю.
+import re # Used to do a case insensitive search
 
-#Print final result in copy-pasteable format.
+# Some of the mappings below were inspired by http://translit.cc
+
+mapping = {
+  "a"    : "а",
+  "b"    : "б",
+  "c"    : "ц",
+  "d"    : "д",
+  "e"    : "е",
+  "f"    : "ф",
+  "g"    : "г",
+  "h"    : "х",
+  "i"    : "и",
+  "j"    : "й",
+  "k"    : "к",
+  "l"    : "л",
+  "m"    : "м",
+  "n"    : "н",
+  "o"    : "о",
+  "p"    : "п",
+  "q"    : "", # "q" can't map to much...
+  "r"    : "р",
+  "s"    : "с",
+  "t"    : "т",
+  "u"    : "у",
+  "v"    : "в",
+  "w"    : "в", # "w" is the same as "v"
+  "x"    : "х", # They look the same but there is nothing "x" can map to..
+  "y"    : "ы",
+  "z"    : "з",
+  "'"    : "ь",
+  '"'    : "ъ",
+  "''"   : "Ь", # Uppercase
+  '""'   : "Ъ", # Uppercase
+  "jo"   : "ё",
+  "yo"   : "ё",
+  "ya"   : "я",
+  "zh"   : "ж",
+  "sh"   : "ш",
+  "shh"  : "щ",
+  "shch" : "щ"
+}
+
+# We should do the longest sequences first
+keys = sorted(mapping.keys(), key=lambda item: -len(item))
+
+# Let's define our function
+
+def eng_to_ru(english):
+  for key in keys:
+    english = english.replace(key, mapping[key]) # lower => lower
+    english = english.replace(key.upper(), mapping[key].upper()) # CAPS => CAPS
+    english = re.compile(key, re.IGNORECASE).sub(mapping[key], english) # MiXeD => lower
+  return english
+
+# Demonstartion of capabilities
+print(eng_to_ru("privet"))
+print(eng_to_ru("PrIvEt"))
+print(eng_to_ru("Mne skol'koto let. Ponyatno?"))
+print(eng_to_ru(input(eng_to_ru("Pozhaluysta, vvedite angliyskiy")))) # Testing user input
